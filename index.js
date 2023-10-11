@@ -10,7 +10,8 @@ const morgan = require('morgan');
 
 // Route files
 const bootcamps = require('./routes/bootcamps');
-console.log(require('dotenv').config())
+const courses = require('./routes/courses');
+
 // Load environment variables
 connectDB()
 
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
 
 // Error handler middleware
 app.use(errorHandler);
