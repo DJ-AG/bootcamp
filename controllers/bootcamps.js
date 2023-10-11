@@ -36,6 +36,15 @@ exports.getBootcamps = asyncHandler(async(req, res, next) => {
     query = query.select(fields);
   }
 
+// Sort
+  if(req.query.sort) {
+    const sortBy = req.query.sort.split(',').join(' ');
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort('-createdAt')
+  }
+
+
   // Executing query
   const bootcamps = await query;
 
