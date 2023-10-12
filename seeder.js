@@ -42,8 +42,8 @@ const connectDB = async () => {
     await Bootcamp.create(bootcamps);
     console.log("Bootcamp Imported...".green.inverse)
 
-    // await Course.create(courses);
-    // console.log("Course Imported...".green.inverse)
+     await Course.create(courses);
+     console.log("Course Imported...".green.inverse)
 
     // Log success and exit process after data import.
     console.log("All data Imported...".green.inverse);
