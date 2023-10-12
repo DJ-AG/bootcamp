@@ -11,63 +11,8 @@ const colors = require('colors');
 // @access Public
 exports.getBootcamps = asyncHandler(async(req, res, next) => {
 
-  let query;
-
-  // Copying req.query to avoid mutating the original object
-  const reqQuery = { ...req.query };
-
-  // Fields to be removed from the query before it's executed
-  const removeFields = ['select', 'sort', 'page', 'limit'];
-
-  // Deleting the removeFields from reqQuery to avoid unwanted filtering
-  removeFields.forEach(param => delete reqQuery[param]);
-
-  // Converting reqQuery to a string to be able to use replace method in the next step
-  let queryStr = JSON.stringify(reqQuery);
-
-  // Replacing the filtering keywords with MongoDB operator equivalents
-  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-
-  // Converting the string back to JSON and executing the query
-  query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
-
-  // Selecting specific fields if they are specified in req.query.select
-  if(req.query.select){
-    const fields = req.query.select.split(',').join(' ');
-    query = query.select(fields);
-  }
-
-  // Sorting the results if sort parameters are provided, defaulting to sorting by creation time
-  if(req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort('-createdAt')
-  }
-
-  // Implementing Pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 25;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit
-  const total = await Bootcamp.countDocuments();
-
-  query = query.skip(startIndex).limit(limit);
-
-  // Executing the query to fetch the bootcamps from the database
-  const bootcamps = await query;
-
-  // Pagination result, checking if there are more pages available
-  const pagination = {};
-  if(endIndex < total){
-    pagination.next = { page: page + 1, limit }
-  }
-  if(startIndex > 0){
-    pagination.prev = { page: page - 1, limit }
-  }
-
   // Sending a response with the fetched bootcamps and pagination info
-  res.status(200).json({ success: true, count: bootcamps.length, pagination: pagination, data: bootcamps });
+  res.status(200).json(res.advancedResults);
 });
 // Desc: Get single bootcamp
 // @route GET /api/v1/bootcamps/:id
