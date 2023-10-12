@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const geocoder = require("../utils/geocoder");
 const slugify = require("slugify");
+const colors = require('colors');
 
 const BootcampSchema = new mongoose.Schema({
   name: {
@@ -103,18 +104,30 @@ const BootcampSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+},{
+  // Enabling virtuals for JSON and Object form so that
+  // they are included when a result is converted and sent as response.
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Create bootcamp slug from the name
+// Middleware to create a URL slug for the bootcamp before saving to the database
+// This will run before the data is saved ("pre-save") and generates a slug from the name field.
 BootcampSchema.pre("save", function (next) {
+  // Using slugify to convert the name into a URL-friendly string
+  // and setting it on the slug field of the model.
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
-// Geocode & create location field
-
+// Middleware to translate an address into geographical coordinates using geocoding
+// and set up other location-related fields before saving to the database.
 BootcampSchema.pre('save', async function(next) {
+  // Using the geocoder to convert the address into geographical and other locational data.
   const loc = await geocoder.geocode(this.address);
+
+  // Setting up the location field with the geocoded data,
+  // adding various fields like coordinates, city, state, etc.
   this.location = {
     type: 'Point',
     coordinates: [loc[0].longitude, loc[0].latitude],
@@ -126,9 +139,30 @@ BootcampSchema.pre('save', async function(next) {
     country: loc[0].countryCode
   };
 
-  // Do not save address in DB
+  // Not saving the original address field in DB to avoid redundancy
+  // as we already have a comprehensive location field.
   this.address = undefined;
   next();
+});
+
+// Middleware: Cascade delete courses when a bootcamp is deleted
+// This ensures data integrity by removing related course documents when a bootcamp is deleted,
+// avoiding orphaned documents in the database that are linked to a non-existing bootcamp.
+BootcampSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+  console.log(`Courses being removed from bootcamp ${this._id}`.red.inverse)
+  // Using `this.model('Course')` to access the Course model,
+  // deleting all courses where the bootcamp field equals the _id of the bootcamp being removed.
+  await this.model('Course').deleteMany({ bootcamp: this._id })
+  next() // Proceed to the next middleware or actual deletion if there are no more middlewares.
+})
+
+// Virtual property to populate Bootcamp with Course(s)
+// This sets up a virtual populate to allow referencing documents in other models without actually saving its ObjectId in the bootcamp document.
+BootcampSchema.virtual('courses', {
+  ref: 'Course',            // Reference to the Course model
+  localField:'_id',         // Field in the Bootcamp model
+  foreignField: 'bootcamp', // Field in the Course model
+  justOne: false            // Indicates that multiple courses can be linked to a bootcamp
 });
 
 module.exports = mongoose.model("Bootcamp", BootcampSchema);
