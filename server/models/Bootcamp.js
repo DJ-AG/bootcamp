@@ -104,6 +104,11 @@ const BootcampSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  user:{
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true
+  }
 },{
   // Enabling virtuals for JSON and Object form so that
   // they are included when a result is converted and sent as response.
