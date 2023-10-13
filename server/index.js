@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
+const config = require("./utils/config");
 const connectDB = require("./config/db");
 const logger = require("./config/logger.config");
 const colors = require("colors");
@@ -12,6 +13,7 @@ const morgan = require("morgan"); // HTTP request logger middleware
 // Route files
 const bootcamps = require("./routes/bootcamps");
 const courses = require("./routes/courses");
+const auth = require('./routes/auth');
 
 // Load environment variables
 // Note: it seems like dotenv is required but not used.
@@ -27,7 +29,7 @@ app.use(express.json());
 
 // Development logging middleware
 // Utilizing morgan to log HTTP requests in development mode
-if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+if (config.node_env === "development") app.use(morgan("dev"));
 
 app.use(fileupload());
 
@@ -39,6 +41,7 @@ app.use(express.static('../client/dist'));
 // These routers define routes that our application will respond to.
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses);
+app.use('/api/v1/auth',auth)
 
 // Error handler middleware
 // Utilize custom error handler middleware to centrally manage error responses.
@@ -50,14 +53,14 @@ app.get('*', (req, res) => {
 
 // Define port
 // Set the port that the Express server will listen on.
-const port = process.env.PORT || 5000;
+const port = config.port;
 
 // Start the Express server
 // Initiate listening on the defined port and log the status.
 app.listen(port, () => {
   logger.info(
     `Server running on port ${port.toString().yellow.bold} in ${
-      process.env.NODE_ENV.yellow.bold
+      config.node_env.yellow.bold
     } mode`
   );
 });

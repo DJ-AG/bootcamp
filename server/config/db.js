@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("../utils/config");
 const colors = require("colors");
 const logger = require("./logger.config");
 
@@ -9,7 +9,7 @@ const connectDB = async () => {
   try {
     // Attempt to establish a connection to MongoDB using the connection string provided in the .env file.
     // Options are provided to ensure that the connection uses the new URL string parser and the unified topology engine to avoid deprecation warnings.
-    const connect = await mongoose.connect(process.env.MONGODB_URL, {
+    const connect = await mongoose.connect(config.mongodb_url, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

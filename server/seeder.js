@@ -1,4 +1,4 @@
-const dotenv = require("dotenv");
+const config = require("./utils/config");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const colors = require("colors");
@@ -17,7 +17,7 @@ const connectDB = async () => {
 
 
   // Establish a connection to MongoDB using mongoose and environment variable.
-  const connect = await mongoose.connect(process.env.MONGODB_URL, {
+  const connect = await mongoose.connect(config.mongodb_url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     connectTimeoutMS: 200000,

@@ -1,4 +1,5 @@
 const path = require("path");
+const config = require("../utils/config");
 const logger = require("../config/logger.config");
 const geocoder = require("../utils/geocoder");
 const Bootcamp = require("../models/Bootcamp");
@@ -122,10 +123,10 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`Please upload an image file`, 400));
 
   // Check file size
-  if (file.size > process.env.MAX_FILE_UPLOAD) {
+  if (file.size > config.max_file_upload) {
     return next(
       new ErrorResponse(
-        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
+        `Please upload an image less than ${config.max_file_upload}`,
         400
       )
     );
@@ -135,7 +136,7 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`;
 
   // Move the uploaded file to the designated upload path and update the bootcamp's photo field in the database
-  file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async (err) => {
+  file.mv(`${config.file_upload_path}/${file.name}`, async (err) => {
     if (err) {
       console.log(err);
       return next(new ErrorResponse(`Problem with file upload`, 500));

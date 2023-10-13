@@ -1,4 +1,5 @@
 const winston = require('winston');
+const config = require('../utils/config');
 
 // Creating a custom Winston format that checks if logged information is an instance of Error
 // If it is, it modifies the logged info to display the error stack trace.
@@ -13,7 +14,7 @@ const enumrateErrorFormat = winston.format((info) => {
 const logger = winston.createLogger({
 // Setting the logging level based on the node environment. 
 // If in production, only log 'info' and above, otherwise 'debug' and above.
-level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+level: config.node_env === 'production' ? 'info' : 'debug',
 
 // Defining the format of the logs
 format: winston.format.combine(
