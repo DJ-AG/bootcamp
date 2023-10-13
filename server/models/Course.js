@@ -38,42 +38,58 @@ const CourseSchema = new mongoose.Schema({
   },
 });
 
-// Static method to get average tuition cost for a bootcamp
-CourseSchema.statics.getAvgCost = async function (bootcampId){  
+// Define a static method on the CourseSchema.statics object.
+// This method calculates the average cost of courses for a specific bootcamp.
+CourseSchema.statics.getAvgCost = async function (bootcampId){
+  
+  // Perform an aggregation pipeline operation in MongoDB via Mongoose.
+  // This pipeline will consist of several stages to transform the course documents into aggregated results.
   const obj = await this.aggregate([
     {
-      // Matching all documents related to the provided bootcampId
+      // Stage 1: $match
+      // Filter the documents to pass to the next stage in the pipeline
+      // Only documents related to the provided bootcampId will be allowed through.
       $match: {bootcamp: bootcampId}
     },
     {
-      // Grouping results by bootcamp id and calculating the average cost
+      // Stage 2: $group
+      // Group input documents by the specified "_id" expression and for each distinct grouping, 
+      // output a document. Here, grouping by "bootcamp" field and calculating the average "tuition".
       $group: {
         _id: "$bootcamp",
         averageCost: {$avg: "$tuition"}
       }
     }
   ])
+  
   try {
-    // Updating the related Bootcamp's averageCost field with the calculated average cost
+    // Update the related Bootcamp document with the calculated average cost.
+    // 'Math.ceil(obj[0].averageCost/10)*10': Round up the average to the nearest 10.
+    // 'this.model("Bootcamp")' accesses the Bootcamp model from the Course model context.
     await this.model("Bootcamp").findByIdAndUpdate(bootcampId, {
       averageCost: Math.ceil(obj[0].averageCost/10)*10
     })
   } catch (error) {
+    // Log the error in the console if an error occurs during the update operation.
     console.error(error)
   }
 }
 
-// Middleware: Execute after saving a course document
+// Middleware: Execute After Saving a Course Document
 CourseSchema.post("save", function () {
-  // Re-calculating the average cost after saving a new course
+  // Re-calculate the average cost after a course document is saved.
+  // 'this.constructor': Refers to the model that created the instance (Course model).
+  // 'this.bootcamp': Refers to the bootcampId of the current course instance.
   this.constructor.getAvgCost(this.bootcamp);
 });
 
-// Middleware: Execute before removing a course document
+// Middleware: Execute Before Removing a Course Document
 CourseSchema.pre("remove", function () {
-  // Re-calculating the average cost after a course is removed
+  // Re-calculate the average cost just before a course document is removed.
+  // Ensuring that the average cost remains accurate even after course removal.
   this.constructor.getAvgCost(this.bootcamp);
 });
+
 
 
 module.exports = mongoose.model("Course", CourseSchema);

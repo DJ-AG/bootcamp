@@ -13,27 +13,30 @@ const ErrorResponse = require("../utils/errorResponse");
 // and handle errors more gracefully
 
 exports.getCourses = asyncHandler(async (req, res, next) => {
-  let query; // Initialize a variable to hold the Mongoose query object
+  let query;
 
-  // Check if there is a bootcampId parameter in the request URL
+  // Check if a bootcamp ID is provided in the request URL.
+  // If provided, the response will only include courses related to this bootcamp.
   if (req.params.bootcampId) {
-    // If bootcampId is present, set up a query to find all courses related to that bootcamp
+    // Find all courses related to the specified bootcamp ID.
     query = Course.find({ bootcamp: req.params.bootcampId });
   }
-  // If bootcampId is NOT present, set up a query to find all courses
-  // and populate the related bootcamp data
+  // If no bootcamp ID is provided, fetch all courses along with their related bootcamp details.
   else
     query = Course.find().populate({
-      path: "bootcamp", // Populating data from the related bootcamp
-      select: "name description", // Selecting only name and description fields from the populated bootcamp data
+      path: "bootcamp", 
+      select: "name description",
     });
 
-  // Executing the query and storing the result in the courses variable
-  // If there’s an error in the awaited promise, it will be caught by the asyncHandler middleware
+  // Execute the query and store the retrieved courses in a variable.
   const courses = await query;
 
-  // Sending a success response to the client with the fetched courses
-  // The response contains a status code of 200 and a JSON payload with a success flag, count of courses, and the courses data
+  // Send response to client: 
+  // Status: 200 OK
+  // Body: JSON containing: 
+  // - success: true
+  // - count: Number of courses retrieved
+  // - data: Array of courses
   res.status(200).send({ success: true, count: courses.length, data: courses });
 });
 
@@ -42,21 +45,20 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
 // @access Public
 
 exports.getCourseById = asyncHandler(async (req, res, next) => {
-  // Finding the course by id and populating the related bootcamp data
+  // Find a course with the provided ID and populate the related bootcamp’s name and description.
   const course = await Course.findById(req.params.id).populate({
-    path: "bootcamp", // Populating data from the related bootcamp
-    select: "name description", // Selecting only name and description fields from the populated bootcamp data
+    path: "bootcamp",
+    select: "name description",
   });
 
-  // If no course is found, send a 404 response with an appropriate error message
+  // If no course is found, send an error response.
   if (!course)
     return next(
       new ErrorResponse(`No course with the id of ${req.params.id}`),
       404
     );
 
-  // Sending a success response to the client with the fetched course
-  // The response contains a status code of 200 and a JSON payload with a success flag and the course data
+  // Send response with found course data.
   res.status(200).send({ success: true, data: course });
 });
 
@@ -65,11 +67,12 @@ exports.getCourseById = asyncHandler(async (req, res, next) => {
 // @access Private
 
 exports.addCourse = asyncHandler(async (req, res, next) => {
+  // Assign the bootcamp ID and user ID from the request to the body object.
   req.body.bootcamp = req.params.bootcampId;
   req.body.user = req.user.id;
 
+  // Check if the bootcamp exists.
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
-
   if (!bootcamp) {
     return next(
       new ErrorResponse(`No bootcamp with the id of ${req.params.bootcampId}`),
@@ -77,7 +80,7 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is bootcamp owner
+  // Check if the user is the owner of the bootcamp or an admin.
   if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
@@ -87,8 +90,10 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Create a new course using the request body data.
   const course = await Course.create(req.body);
 
+  // Send response with created course data.
   res.status(200).json({
     success: true,
     data: course
@@ -102,6 +107,7 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   let course = await Course.findById(req.params.id);
 
+  // If the course is not found, send an error response.
   if (!course) {
     return next(
       new ErrorResponse(`No course with the id of ${req.params.id}`),
@@ -109,7 +115,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is course owner
+  // Check if the user is the owner of the course or an admin.
   if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
@@ -119,11 +125,13 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Update the course with the provided data.
   course = await Course.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
 
+  // Send response with updated course data.
   res.status(200).json({
     success: true,
     data: course
@@ -136,6 +144,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findById(req.params.id);
 
+  // If the course is not found, send an error response.
   if (!course) {
     return next(
       new ErrorResponse(`No course with the id of ${req.params.id}`),
@@ -143,7 +152,7 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is course owner
+  // Check if the user is the owner of the course or an admin.
   if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return next(
       new ErrorResponse(
@@ -153,8 +162,10 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Delete the course.
   await course.remove();
 
+  // Send response with success status and empty data object.
   res.status(200).json({
     success: true,
     data: {}
