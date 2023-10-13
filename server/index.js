@@ -7,6 +7,7 @@ const logger = require("./config/logger.config");
 const colors = require("colors");
 const errorHandler = require("./middleware/error");
 const fileupload = require("express-fileupload");
+const cookieParser = require("cookie-parser");
 
 const morgan = require("morgan"); // HTTP request logger middleware
 
@@ -22,6 +23,10 @@ connectDB();
 
 // Create an instance of an Express app
 const app = express();
+
+// Cookie parser
+app.use(cookieParser());
+
 
 // Body parser
 // Middleware to parse JSON bodies from HTTP requests

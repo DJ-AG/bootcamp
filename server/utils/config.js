@@ -18,6 +18,8 @@ const jwt_secret = process.env.JWT_SECRET
 
 const jwt_expire = process.env.JWT_EXPIRE
 
+const jwt_cookie_expire = process.env.JWT_COOKIE_EXPIRE
+
 const max_file_upload = process.env.MAX_FILE_UPLOAD
 
 const file_upload_path = process.env.FILE_UPLOAD_PATH
@@ -32,6 +34,7 @@ module.exports = {
     geocoder_api_key,
     jwt_secret,
     jwt_expire,
+    jwt_cookie_expire,
     max_file_upload,
     file_upload_path
 }
