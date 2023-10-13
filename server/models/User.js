@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const config = require("../utils/config");
 const bcrypt = require("bcrypt");
@@ -42,6 +43,11 @@ const UserSchema = new mongoose.Schema({
 // Define a pre-save middleware function for the UserSchema in Mongoose.
 // 'pre('save')' means that this function will run before the document is saved.
 UserSchema.pre('save', async function(next){
+    // Check if the password field has been modified.
+    if(!this.isModified('password')){
+        // If the password has not been modified, call the next middleware function in the stack.
+        next()
+    }
     // Generate a "salt" using bcrypt. 
     // A salt is random data that is used as an additional input to a hash function.
     // The '10' here determines how computationally intensive the salt generation is.
@@ -77,6 +83,26 @@ UserSchema.methods.matchPassword = async function(enteredPassword){
     // when hashed, matches the stored hash ('this.password').
     // 'this.password' refers to the hashed password related to the instance the method is called on.
     return await bcrypt.compare(enteredPassword, this.password)
+}
+
+// Generate and hash password token
+UserSchema.methods.getResetPasswordToken = function(){
+    // Generate a random token using the built-in 'crypto' module.
+    const resetToken = crypto.randomBytes(20).toString("hex")
+
+    // Hash the token and set it to the resetPasswordToken field.
+    // The 'crypto' module has a built-in method for hashing.
+    // 'createHash()' creates and returns a Hash object.
+    // 'update()' updates the hash content with the provided data.
+    // 'digest()' calculates the digest of all of the data passed to be hashed.
+    // 'hex' is the encoding to be used for the output.
+    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+
+    // Set the expiration date for the token to 10 minutes from now.
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000
+
+    // Return the unhashed token.
+    return resetToken
 }
 
 

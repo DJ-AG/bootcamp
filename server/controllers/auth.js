@@ -57,6 +57,43 @@ exports.login = asyncHandler(async (req,res,next) => {
 })
 
 
+
+// Desc: Get current logged in user
+// @route POST /api/v1/auth/me
+// @access Private
+
+exports.getMe = asyncHandler(async (req,res,next) => {
+    // Retrieve user data from the database using the user ID obtained from the request object.
+    // This ID was populated by the middleware validating the JWT token.
+    const user = await User.findById(req.user.id)
+
+    // Send a response containing:
+    // - HTTP Status Code: 200 OK
+    // - JSON body containing: success flag and user data
+    res.status(200).json({success: true, data: user})
+})
+
+
+// Desc: Forgot password
+// @route POST /api/v1/auth/forgotpassword
+// @access Public
+
+exports.forgotPassword = asyncHandler(async (req,res,next) => {
+
+    const user = await User.findOne({email: req.body.email})
+
+    if(!user) return next(new ErrorResponse("There is no user with that email", 404))
+
+    // Get reset token
+    const resetToken = user.getResetPasswordToken()
+
+    await user.save({validateBeforeSave: false})
+
+    res.status(200).json({success: true, data: user})
+})
+
+
+
 //Get toke from model, create cookie and send response
 
 const sendTokenResponse = (user, statusCode, res) => {
@@ -84,18 +121,3 @@ const sendTokenResponse = (user, statusCode, res) => {
     .cookie('token', token, options) // Set cookie in response
     .json({ success: true, token });
 }
-
-// Desc: Get current logged in user
-// @route POST /api/v1/auth/me
-// @access Private
-
-exports.getMe = asyncHandler(async (req,res,next) => {
-    // Retrieve user data from the database using the user ID obtained from the request object.
-    // This ID was populated by the middleware validating the JWT token.
-    const user = await User.findById(req.user.id)
-
-    // Send a response containing:
-    // - HTTP Status Code: 200 OK
-    // - JSON body containing: success flag and user data
-    res.status(200).json({success: true, data: user})
-})
