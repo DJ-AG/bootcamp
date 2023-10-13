@@ -33,6 +33,7 @@ app.use(fileupload());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static('../client/dist'));
 
 // Mount routers
 // These routers define routes that our application will respond to.
@@ -42,6 +43,10 @@ app.use("/api/v1/courses", courses);
 // Error handler middleware
 // Utilize custom error handler middleware to centrally manage error responses.
 app.use(errorHandler);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 // Define port
 // Set the port that the Express server will listen on.
