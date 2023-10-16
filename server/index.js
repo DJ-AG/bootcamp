@@ -15,6 +15,7 @@ const morgan = require("morgan"); // HTTP request logger middleware
 const bootcamps = require("./routes/bootcamps");
 const courses = require("./routes/courses");
 const auth = require('./routes/auth');
+const users = require('./routes/users');
 
 // Load environment variables
 // Note: it seems like dotenv is required but not used.
@@ -47,6 +48,7 @@ app.use(express.static('../client/dist'));
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses);
 app.use('/api/v1/auth',auth)
+app.use('/api/v1/users',users)
 
 // Error handler middleware
 // Utilize custom error handler middleware to centrally manage error responses.
