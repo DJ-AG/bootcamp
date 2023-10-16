@@ -9,6 +9,7 @@ const logger = require("./config/logger.config");
 const Bootcamp = require("./models/Bootcamp");
 const Course = require("./models/Course");
 const User = require("./models/User");
+const Review = require("./models/Review");
 
 // Function to connect to MongoDB and manage data import/destruction.
 const connectDB = async () => {
@@ -37,6 +38,10 @@ const connectDB = async () => {
     fs.readFileSync(`${__dirname}/_data/users.json`, "utf-8")
   );
 
+  const reviews = JSON.parse(
+    fs.readFileSync(`${__dirname}/_data/reviews.json`, "utf-8")
+  )
+
 
   // Function to import data into the database.
   const importData = asyncHandler(async () => {
@@ -49,6 +54,9 @@ const connectDB = async () => {
 
       await User.create(users);
       console.log("User Imported...".green.inverse)
+
+      await Review.create(reviews);
+      console.log("Review Imported...".green.inverse)
 
     // Log success and exit process after data import.
     console.log("All data Imported...".green.inverse);
@@ -66,6 +74,9 @@ const connectDB = async () => {
 
     await User.deleteMany();
     console.log("User Data Destroyed...".red.inverse)
+
+    await Review.deleteMany();
+    console.log("Review Data Destroyed...".red.inverse)
 
     // Log success and exit process after data destruction.
     console.log("All data Destroyed...".red.inverse);
