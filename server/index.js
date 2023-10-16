@@ -6,6 +6,12 @@ const connectDB = require("./config/db");
 const logger = require("./config/logger.config");
 const colors = require("colors");
 const errorHandler = require("./middleware/error");
+const mongoSanitize = require("express-mongo-sanitize"); // Sanitize user-supplied data to prevent MongoDB Operator Injection
+const helmet = require("helmet"); // Helmet helps you secure your Express apps by setting various HTTP headers
+const xss = require("xss-clean"); // Sanitize user-supplied data to prevent XSS attacks
+const rateLimit = require('express-rate-limit'); // Rate limiting middleware to limit repeated requests to public APIs and/or endpoints such as password reset.
+const hpp = require("hpp"); // Express middleware to protect against HTTP Parameter Pollution attacks
+const cors = require("cors"); // Enable CORS
 const fileupload = require("express-fileupload");
 const cookieParser = require("cookie-parser");
 
@@ -39,6 +45,29 @@ app.use(express.json());
 if (config.node_env === "development") app.use(morgan("dev"));
 
 app.use(fileupload());
+
+// Sanitize user-supplied data to prevent MongoDB Operator Injection
+app.use(mongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
+// Prevent XSS attacks
+app.use(xss());
+
+// Rate limiting
+const limit = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100 // 100 requests per windowMs
+});
+
+app.use(limit);
+
+// Prevent HTTP Parameter Pollution attacks
+app.use(hpp());
+
+// Enable CORS
+app.use(cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
