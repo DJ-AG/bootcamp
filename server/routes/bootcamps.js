@@ -19,6 +19,7 @@ const advancedResults = require('../middleware/advancedResults');
 
 // Include other resource routers
 const courseRouter = require('./courses');
+const reviewRouter = require('./reviews');
 
 // Initialize the express router
 const router = express.Router();
@@ -26,6 +27,7 @@ const router = express.Router();
 // Re-route into other resource routers
 // Any requests to '/:bootcampId/courses' will be forwarded to the courseRouter
 router.use('/:bootcampId/courses', courseRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
 
 // Route for getting bootcamps in a specific radius based on a zipcode and distance.
 // The route parameters ":zipcode" and ":distance" are dynamic and user-defined in the URL.
