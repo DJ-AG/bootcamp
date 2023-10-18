@@ -1,19 +1,51 @@
-import { useAppContext } from './Redux/appContext'
-import { useState } from 'react'
-import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
-import "./App.css"
-import Login from './components/Login/Login'
-import BootcampFilters from './components/Bootcamps/Bootcamps'
+import { useState } from "react";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import "./App.css";
+import SideBar from "./component/SideBar";
+import MainContent from "./pages/MainContet/MainContent";
+import Bootcamps from "./pages/Bootcamps/Bootcamps";
+import Login from "./pages/Login/Login";
+import Corses from "./pages/Courses/Courses";
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <MainContent />,
+      },
+      {
+        path: "bootcamps",
+        element: <Bootcamps />,
+      },
+      {
+        path: "courses",
+        element: <Corses />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+      }
+    ],
+  },
+]);
 
-function App() {
-  
+function Layout() {
   return (
-    <div className="landing">
-    <HamburgerMenu />
-    <Login/>
-    <BootcampFilters/>
-    </div>
-  )
+    <main className="relative min-h-screen flex overflow-hidden">
+      <SideBar />
+      <div className="flex-1">
+        <Outlet />
+      </div>
+    </main>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <RouterProvider router={router}>
+      <App />
+    </RouterProvider>
+  );
+}

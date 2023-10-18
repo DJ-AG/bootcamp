@@ -1,10 +1,13 @@
 import React, { useReducer, useContext } from "react";
 import reducer from "./reducer";
 import axios from "axios";
-import { GET_ALL_BOOTCAMPS } from "./actions";
+import { GET_ALL_BOOTCAMPS_STARTS,GET_ALL_BOOTCAMPS_DONE,GET_ALL_BOOTCAMPS_FAILED } from "./actions";
 
 const initialState = {
-  bootcamps: [],
+  count: 0,
+  data:[],
+  pagination:{},
+  isLoading: false,
 };
 
 
@@ -17,8 +20,8 @@ const AppProvider = ({ children }) => {
 
 
   const authFetch = axios.create({
-    baseUrl:'/api/v1'
-  })
+    baseURL: `${url}/api/v1`
+});
 
 
   const login = async (email, password) => {
@@ -33,43 +36,17 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  const getBootcamps = async (filters) => {
-    const { select, sort, page, limit } = filters; // destructuring other filters too
-    console.log("This is the filters : ",select, sort, page, limit)
-    url = url + "/api/v1/bootcamps"
-    // Append field selection parameter if it exists
-    if (select) {
-      url += `select=${select}&`;
-    }
-  
-    // Append sorting parameter if it exists
-    if (sort) {
-      url += `sort=${sort}&`;
-    }
-  
-    // Append pagination parameters if they exist
-    if (page) {
-      url += `page=${page}&`;
-    }
-    if (limit) {
-      url += `limit=${limit}&`;
-    }
-
-    // Remove the trailing '&' if it exists
-    if (url.endsWith('&')) {
-      url = url.slice(0, -1);
-    }
-  
-    dispatch({ type: GET_ALL_BOOTCAMPS }); // Assuming this dispatch type exists in your context
-  
+  const getBootcamps = async (page, limit) => {
+    dispatch({ type: GET_ALL_BOOTCAMPS_STARTS });
+    const fetchUrl = `${url}/api/v1/bootcamps?page=${page}`;
     try {
-      console.log("This is the fetch url : ",url);
-      const { data } = await authFetch(url);
-      console.log(data);
+      console.log("This is the fetch url : ", fetchUrl);
+      const { data } = await authFetch(fetchUrl);
+      dispatch({ type: GET_ALL_BOOTCAMPS_DONE, payload:data });
     } catch (error) {
-      console.log(error)
+      dispatch({ type: GET_ALL_BOOTCAMPS_FAILED, payload: { error: error.message } });
+      console.log(error);
     }
-    
 }
 
   return (

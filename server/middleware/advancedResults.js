@@ -10,14 +10,14 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // Creating a shallow copy of req.query to ensure the original request object is not mutated, 
     // providing a baseline for filtering functionality.
     const reqQuery = { ...req.query };
-  
+    console.log(reqQuery.name)
     // Define an array containing query parameters that should be removed 
     // before the database query is constructed.
     const removeFields = ['select', 'sort', 'page', 'limit'];
   
     // Iteratively remove specified fields from the request query copy.
     removeFields.forEach(param => delete reqQuery[param]);
-  
+
     // Convert the modified query object to a JSON string to enable further manipulation.
     let queryStr = JSON.stringify(reqQuery);
   
@@ -26,6 +26,8 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   
     // Construct the initial database query by converting the manipulated query string back to JSON.
     query = model.find(JSON.parse(queryStr));
+    
+    console.log(query)
   
     // Check if specific fields are requested in the query string and 
     // modify the database query to select only those fields.
@@ -42,10 +44,11 @@ const advancedResults = (model, populate) => async (req, res, next) => {
       // Default sorting by createdAt in descending order if no sorting parameter is provided.
       query = query.sort('-createdAt');
     }
+    
   
     // Implement pagination: set up variables for page, limit, startIndex, and endIndex.
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 25;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     // Find the total number of documents that match the query.
