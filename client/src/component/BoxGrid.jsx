@@ -19,7 +19,7 @@ const BoxGrid = () => {
   }
 
   return (
-    <div className="flex flex-wrap justify-center">
+    <div className="flex flex-wrap justify-center gap-4 px-4">
       {data.map((dataItem) => (
         <Box key={dataItem.name} data={dataItem} />
       ))}
